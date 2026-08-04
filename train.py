@@ -43,21 +43,33 @@
 # # path = model.export(format="onnx")  # Returns the path to the exported model
 
 
+import argparse
 import os
 import yaml
 from ultralytics import YOLO
 
 # ==========================================
-# 1. BIẾN ĐIỀU KHIỂN (THAY ĐỔI TRƯỚC KHI TEST)
+# 1. NHẬN THAM SỐ TỪ COMMAND LINE (HỖ TRỢ KAGGLE)
 # ==========================================
-TARGET_DATASET = 'BUSI'     # Chọn 1 trong 3: 'BUSBRA', 'BUSI', 'BrEaST'
-TARGET_MILESTONE = 100      # Đặt mốc test thử (VD: 100, 200...)
+parser = argparse.ArgumentParser(description="Train YOLO model with custom dataset and milestone")
+parser.add_argument('--dataset', type=str, default='BUSI', help="Chọn 1 trong 3: 'BUSBRA', 'BUSI', 'BrEaST'")
+parser.add_argument('--milestone', type=int, default=100, help="Mốc số lượng ảnh (VD: 100, 200...)")
+parser.add_argument('--epochs', type=int, default=2, help="Số epochs để train (Kaggle nên đặt 100-200)")
+parser.add_argument('--device', type=str, default='cpu', help="Thiết bị train: 'cpu' hoặc '0' cho GPU (trên Kaggle dùng '0')")
+parser.add_argument('--workers', type=int, default=0, help="Số workers cho dataloader (Kaggle có thể dùng 2 hoặc 4)")
+parser.add_argument('--data_dir', type=str, default=None, help="Đường dẫn đến thư mục chứa dữ liệu (Trên Kaggle sẽ là /kaggle/input/...)")
+args = parser.parse_args()
+
+TARGET_DATASET = args.dataset
+TARGET_MILESTONE = args.milestone
 
 # Lấy đường dẫn thư mục gốc tự động
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-# Đảm bảo thư mục FINAL_EXPERIMENTS nằm cùng cấp với file code này
-# (Đã sửa lại để trỏ đúng vào thư mục 'datasets/FINAL_EXPERIMENTS' nơi chứa ảnh)
-DATASETS_DIR = os.path.join(BASE_DIR, 'datasets', 'FINAL_EXPERIMENTS')
+# Xác định thư mục chứa dữ liệu
+if args.data_dir:
+    DATASETS_DIR = args.data_dir
+else:
+    DATASETS_DIR = os.path.join(BASE_DIR, 'datasets', 'FINAL_EXPERIMENTS')
 
 # Từ điển chứa thông tin Classes cho từng bộ
 INFO = {
@@ -103,7 +115,7 @@ model.train(
     data=yaml_path,        # Truyền đường dẫn file YAML vừa tạo tự động
     imgsz=640,
     batch=8,               # Ổn định hơn, ít dao động mAP
-    epochs=2,              # Chạy 2 epochs để test luồng dữ liệu (Pipeline)
+    epochs=args.epochs,    # Nhận từ dòng lệnh (Kaggle: --epochs 100)
     cache=False,
     amp=False,             # FP32 cho độ chính xác cao nhất
     optimizer='SGD',
@@ -112,8 +124,8 @@ model.train(
     seed=42,
     project='runs/train',
     name=run_name,
-    workers=0,             # Windows bắt buộc để 0 để tránh lỗi đa luồng (multiprocessing)
-    device='cpu',          # Test nhẹ bằng CPU
+    workers=args.workers,  # Nhận từ dòng lệnh (Kaggle: --workers 2)
+    device=args.device,    # Nhận từ dòng lệnh (Kaggle: --device 0)
     val=True,
 )
 
