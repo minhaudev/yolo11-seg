@@ -84,7 +84,9 @@ INFO = {
 dataset_path = os.path.join(DATASETS_DIR, TARGET_DATASET)
 train_folder = f'train_{TARGET_MILESTONE}'
 
-yaml_path = os.path.join(dataset_path, f'data_{TARGET_MILESTONE}.yaml')
+# Sửa lỗi cho Kaggle: /kaggle/input là thư mục chỉ đọc (Read-only)
+# Nên ta sẽ lưu file yaml tạm thời ở thư mục hiện tại (BASE_DIR) thay vì dataset_path
+yaml_path = os.path.join(BASE_DIR, f'data_{TARGET_DATASET}_{TARGET_MILESTONE}.yaml')
 yaml_content = {
     'path': dataset_path,
     'train': os.path.join(train_folder, 'images'),
@@ -94,7 +96,6 @@ yaml_content = {
 }
 
 # Ghi ra file yaml
-os.makedirs(dataset_path, exist_ok=True)
 with open(yaml_path, 'w', encoding='utf8') as f:
     yaml.dump(yaml_content, f, sort_keys=False)
 
