@@ -58,6 +58,7 @@ parser.add_argument('--epochs', type=int, default=2, help="Số epochs để tra
 parser.add_argument('--device', type=str, default='cpu', help="Thiết bị train: 'cpu' hoặc '0' cho GPU (trên Kaggle dùng '0')")
 parser.add_argument('--workers', type=int, default=0, help="Số workers cho dataloader (Kaggle có thể dùng 2 hoặc 4)")
 parser.add_argument('--data_dir', type=str, default=None, help="Đường dẫn đến thư mục chứa dữ liệu (Trên Kaggle sẽ là /kaggle/input/...)")
+parser.add_argument('--patience', type=int, default=10, help="Số epoch dừng sớm nếu không cải thiện (Early stopping)")
 args = parser.parse_args()
 
 TARGET_DATASET = args.dataset
@@ -120,7 +121,7 @@ model.train(
     cache=False,
     amp=False,             # FP32 cho độ chính xác cao nhất
     optimizer='SGD',
-    patience=10,
+    patience=args.patience,# Early stopping nếu không cải thiện
     save_period=10,
     seed=42,
     project='runs/train',
