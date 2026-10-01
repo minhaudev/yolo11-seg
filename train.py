@@ -13,5 +13,5 @@ model.train(
     seed=42,
     project="runs/BUSBRA",
     name="yolo11n_seg_baseline",
-    plots=True
+    plots=True,
 )
